@@ -25,9 +25,6 @@ async function checkConfig() {
   console.log('🔍 ===============================================\n')
 
   try {
-    // Import types dynamically
-    const { Database } = await import('../src/infrastructure/database/types')
-
     // Create database connection directly
     const pool = new Pool({
       connectionString: process.env.DATABASE_URL,
