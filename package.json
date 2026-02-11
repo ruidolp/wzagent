@@ -1,0 +1,34 @@
+{
+  "name": "wirc",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:types": "kysely-codegen --out-file=src/infrastructure/database/types.ts",
+    "db:migrate": "psql $DATABASE_URL -f src/infrastructure/database/migrations/001_initial_schema.sql"
+  },
+  "dependencies": {
+    "next": "15.1.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "kysely": "^0.27.3",
+    "pg": "^8.11.3",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/pg": "^8.11.0",
+    "typescript": "^5",
+    "kysely-codegen": "^0.15.0",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.33",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8",
+    "eslint-config-next": "15.1.4"
+  }
+}
