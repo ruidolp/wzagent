@@ -1,8 +1,19 @@
 -- Seed Initial Flows
 -- This will create hardcoded flows for testing
--- Run this after creating a tenant
+-- This migration will also create the default tenant if it doesn't exist
 
--- Note: Replace {TENANT_ID} with actual tenant ID when running
+-- ============================================================
+-- CREATE DEFAULT TENANT (if not exists)
+-- ============================================================
+INSERT INTO tenants (id, name, slug, session_timeout_minutes, timezone)
+VALUES (
+  '26a5c927-7cc9-4bbc-b1a3-963fa4698881',
+  'Default Company',
+  'default-company',
+  30,
+  'America/Santiago'
+)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- FLOW: Welcome New User
