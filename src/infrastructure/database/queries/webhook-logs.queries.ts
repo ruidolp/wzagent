@@ -27,3 +27,12 @@ export async function getWebhookLogs(
     .limit(limit)
     .execute()
 }
+
+export async function getRecentWebhookLogs(limit: number = 50) {
+  return await getDb()
+    .selectFrom('webhook_logs')
+    .selectAll()
+    .orderBy('created_at', 'desc')
+    .limit(limit)
+    .execute()
+}

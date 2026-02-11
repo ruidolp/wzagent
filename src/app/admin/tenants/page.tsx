@@ -47,12 +47,20 @@ export default function TenantsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Tenants</h1>
-          <Link
-            href="/admin/tenants/new"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Create Tenant
-          </Link>
+          <div className="flex gap-3">
+            <Link
+              href="/admin/webhook-logs"
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            >
+              📊 Webhook Logs
+            </Link>
+            <Link
+              href="/admin/tenants/new"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Create Tenant
+            </Link>
+          </div>
         </div>
 
         {error && (
@@ -107,9 +115,18 @@ export default function TenantsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="text-blue-600 hover:text-blue-900">
-                        View
-                      </button>
+                      <Link
+                        href={`/admin/tenants/${tenant.id}/edit`}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Edit
+                      </Link>
+                      <Link
+                        href={`/admin/chats?tenant=${tenant.slug}`}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Chats
+                      </Link>
                     </td>
                   </tr>
                 ))}

@@ -63,6 +63,12 @@ export class WebhookHandler {
       // Get WhatsApp account
       const account = await getAccountByPhoneNumberId(value.metadata.phone_number_id)
       if (!account) {
+        console.error('❌ ===============================================')
+        console.error('❌ ACCOUNT NOT FOUND!')
+        console.error('❌ ===============================================')
+        console.error(`📞 Phone Number ID: ${value.metadata.phone_number_id}`)
+        console.error(`🔍 This means the webhook is configured but the WhatsApp account doesn't exist in the database`)
+        console.error('❌ ===============================================')
         logger.warn('Account not found for phone_number_id', {
           phoneNumberId: value.metadata.phone_number_id,
         })
@@ -72,6 +78,11 @@ export class WebhookHandler {
       // Get tenant
       const tenant = await getTenantById(tenantId)
       if (!tenant) {
+        console.error('❌ ===============================================')
+        console.error('❌ TENANT NOT FOUND!')
+        console.error('❌ ===============================================')
+        console.error(`🏢 Tenant ID: ${tenantId}`)
+        console.error('❌ ===============================================')
         logger.warn('Tenant not found', { tenantId })
         continue
       }
@@ -85,7 +96,16 @@ export class WebhookHandler {
 
       // Process status updates
       if (value.statuses && value.statuses.length > 0) {
-        // TODO: Update message status in database
+        console.log('📊 ===============================================')
+        console.log('📊 MESSAGE STATUS UPDATES')
+        console.log('📊 ===============================================')
+        console.log(`📈 Count: ${value.statuses.length}`)
+        value.statuses.forEach((status: any) => {
+          console.log(`  🆔 Message ID: ${status.id}`)
+          console.log(`  ✅ Status: ${status.status}`)
+          console.log(`  👤 Recipient: ${status.recipient_id}`)
+        })
+        console.log('📊 ===============================================')
         logger.debug('Received status updates', { count: value.statuses.length })
       }
     }
@@ -98,10 +118,25 @@ export class WebhookHandler {
     profileName?: string
   ): Promise<void> {
     try {
+      // Enhanced logging for incoming messages
+      console.log('💬 ===============================================')
+      console.log('💬 PROCESSING INCOMING MESSAGE')
+      console.log('💬 ===============================================')
+      console.log(`👤 From: ${message.from} (${profileName || 'Unknown'})`)
+      console.log(`📝 Type: ${message.type}`)
+      console.log(`🆔 Message ID: ${message.id}`)
+      console.log(`🏢 Tenant: ${tenant.name} (${tenant.id})`)
+      console.log(`📱 Account: ${account.phone_number}`)
+      if (message.type === 'text' && message.text) {
+        console.log(`📄 Text: "${message.text.body}"`)
+      }
+      console.log('💬 ===============================================')
+
       logger.info('Processing incoming message', {
         from: message.from,
         type: message.type,
         messageId: message.id,
+        tenantId: tenant.id,
       })
 
       // Get or create user

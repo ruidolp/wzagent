@@ -55,7 +55,19 @@ export async function POST(
     const { tenantId } = await params
     const body = await request.json()
 
-    logger.debug('Webhook POST received', { tenantId })
+    // Enhanced logging for webhook received
+    console.log('🔔 ===============================================')
+    console.log('🔔 WEBHOOK RECEIVED from Meta WhatsApp')
+    console.log('🔔 ===============================================')
+    console.log(`📱 Tenant ID: ${tenantId}`)
+    console.log(`📦 Body:`, JSON.stringify(body, null, 2))
+    console.log('🔔 ===============================================')
+
+    logger.info('Webhook POST received', {
+      tenantId,
+      hasMessages: body.entry?.[0]?.changes?.[0]?.value?.messages?.length > 0,
+      hasStatuses: body.entry?.[0]?.changes?.[0]?.value?.statuses?.length > 0,
+    })
 
     // Get headers
     const signature = request.headers.get('x-hub-signature-256')
