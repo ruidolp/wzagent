@@ -3,6 +3,7 @@ import { TextHandler } from './text-handler'
 import { MenuHandler } from './menu-handler'
 import { ButtonsHandler } from './buttons-handler'
 import { CaptureDataHandler } from './capture-data-handler'
+import { EndHandler } from './end-handler'
 import { logger } from '@/infrastructure/utils/logger'
 
 export class HandlerRegistry {
@@ -30,6 +31,7 @@ handlerRegistry.register(new TextHandler())
 handlerRegistry.register(new MenuHandler())
 handlerRegistry.register(new ButtonsHandler())
 handlerRegistry.register(new CaptureDataHandler())
+handlerRegistry.register(new EndHandler())
 
 // Future handlers can be registered here:
 // handlerRegistry.register(new AIHandler())

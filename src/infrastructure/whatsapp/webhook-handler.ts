@@ -200,6 +200,26 @@ export class WebhookHandler {
         }
       }
 
+      // Check if user wants to restart with MENU keyword
+      const isMenuCommand = message.type === 'text' && message.text?.body.toUpperCase() === 'MENU'
+
+      if (isMenuCommand) {
+        // Clear current node to restart flow from beginning
+        await conversationService.setCurrentNode(
+          conversation.id,
+          null as any,
+          null as any
+        )
+        // Update local conversation reference
+        conversation.current_node_id = null
+        conversation.active_flow_id = null
+
+        logger.info('MENU command detected - resetting conversation flow', {
+          conversationId: conversation.id,
+          userId: user.id,
+        })
+      }
+
       // Determine which flow to execute
       const { flowExecutionService } = await import('@/application/services/flow-execution.service')
       const flow = await flowExecutionService.determineFlow(
