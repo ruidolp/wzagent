@@ -107,17 +107,17 @@ export class ConversationService {
 
   async setCurrentNode(
     conversationId: string,
-    nodeId: string,
-    flowId?: string
+    nodeId: string | null,
+    flowId?: string | null
   ): Promise<void> {
     try {
       const updates: any = { current_node_id: nodeId }
-      if (flowId) {
+      if (flowId !== undefined) {
         updates.active_flow_id = flowId
       }
 
       await updateConversation(conversationId, updates)
-      logger.debug('Updated current node', { conversationId, nodeId })
+      logger.debug('Updated current node', { conversationId, nodeId, flowId })
     } catch (error) {
       logger.error('Error setting current node', error)
       throw error

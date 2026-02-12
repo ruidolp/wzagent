@@ -145,12 +145,15 @@ export class FlowExecutionService {
             flow.id
           )
         } else {
-          // No next node, stay on current node (waiting for response)
-          await conversationService.setCurrentNode(
-            conversation.id,
-            node.id,
-            flow.id
-          )
+          // For 'end' nodes, don't update current_node_id (handler already cleared it)
+          if (node.node_type !== 'end') {
+            // No next node, stay on current node (waiting for response)
+            await conversationService.setCurrentNode(
+              conversation.id,
+              node.id,
+              flow.id
+            )
+          }
           break
         }
       }

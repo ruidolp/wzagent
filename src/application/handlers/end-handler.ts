@@ -39,8 +39,8 @@ export class EndHandler extends BaseHandler {
           // Clear current node to mark conversation as ended
           await conversationService.setCurrentNode(
             context.conversation.id,
-            null as any,
-            null as any
+            null,
+            null
           )
 
           logger.info('Flow finished', {
@@ -68,7 +68,7 @@ export class EndHandler extends BaseHandler {
           // Clear current node - will restart from root on next message
           await conversationService.setCurrentNode(
             context.conversation.id,
-            null as any,
+            null,
             defaultFlow.id
           )
 
@@ -104,7 +104,7 @@ export class EndHandler extends BaseHandler {
           // Clear current node and set new flow
           await conversationService.setCurrentNode(
             context.conversation.id,
-            null as any,
+            null,
             targetFlow.id
           )
 
