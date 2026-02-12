@@ -40,11 +40,29 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
 
-    const { name, accountId, accessToken, phoneNumberId, businessAccountId } = body
+    const {
+      name,
+      accountId,
+      accessToken,
+      phoneNumberId,
+      businessAccountId,
+      welcomeMessageNew,
+      welcomeMessageKnown,
+      newUserFlowId,
+      knownUserFlowId
+    } = body
 
-    // Update tenant if name provided
-    if (name) {
-      await updateTenant(id, { name })
+    // Build tenant update data
+    const tenantUpdateData: any = {}
+    if (name !== undefined) tenantUpdateData.name = name
+    if (welcomeMessageNew !== undefined) tenantUpdateData.welcome_message_new = welcomeMessageNew
+    if (welcomeMessageKnown !== undefined) tenantUpdateData.welcome_message_known = welcomeMessageKnown
+    if (newUserFlowId !== undefined) tenantUpdateData.new_user_flow_id = newUserFlowId || null
+    if (knownUserFlowId !== undefined) tenantUpdateData.known_user_flow_id = knownUserFlowId || null
+
+    // Update tenant if any fields provided
+    if (Object.keys(tenantUpdateData).length > 0) {
+      await updateTenant(id, tenantUpdateData)
     }
 
     // Update WhatsApp account if provided

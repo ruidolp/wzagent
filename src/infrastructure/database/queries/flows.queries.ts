@@ -71,3 +71,14 @@ export async function updateFlow(
     .returningAll()
     .executeTakeFirst()
 }
+
+export async function getFlowsByTenant(tenantId: string) {
+  return await getDb()
+    .selectFrom('flows')
+    .selectAll()
+    .where('tenant_id', '=', tenantId)
+    .where('is_active', '=', true)
+    .where('deleted_at', 'is', null)
+    .orderBy('name', 'asc')
+    .execute()
+}

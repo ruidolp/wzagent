@@ -1,5 +1,6 @@
 import { getFlowById, getFlowByTrigger, getDefaultFlow } from '@/infrastructure/database/queries/flows.queries'
 import { getNodeById, getRootNodes } from '@/infrastructure/database/queries/flow-nodes.queries'
+import { getTenantById } from '@/infrastructure/database/queries/tenants.queries'
 import { conversationService } from './conversation.service'
 import { messageSender } from '@/infrastructure/messaging/message-sender'
 import { handlerRegistry } from '../handlers/registry'
@@ -27,10 +28,26 @@ export class FlowExecutionService {
         if (flow) return flow
       }
 
-      // Check if user is known (has name)
-      const isKnown = user.name !== null
+      // Check tenant's configured flows for new/known users
+      const tenant = await getTenantById(tenantId)
+      if (tenant) {
+        const isKnown = user.name !== null
+        const configuredFlowId = isKnown ? tenant.known_user_flow_id : tenant.new_user_flow_id
 
-      // Get appropriate flow based on user status
+        if (configuredFlowId) {
+          const flow = await getFlowById(configuredFlowId)
+          if (flow) {
+            logger.info('Using tenant-configured flow', {
+              flowId: flow.id,
+              userType: isKnown ? 'known' : 'new'
+            })
+            return flow
+          }
+        }
+      }
+
+      // Fallback to trigger_type matching
+      const isKnown = user.name !== null
       const triggerType = isKnown ? 'known_user' : 'new_user'
       const flow = await getFlowByTrigger(tenantId, triggerType)
 

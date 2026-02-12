@@ -9,6 +9,10 @@ interface Tenant {
   name: string
   slug: string
   created_at: string
+  welcome_message_new?: string
+  welcome_message_known?: string
+  new_user_flow_id?: string
+  known_user_flow_id?: string
 }
 
 interface WhatsAppAccount {
@@ -20,6 +24,12 @@ interface WhatsAppAccount {
   webhook_verify_token: string
 }
 
+interface Flow {
+  id: string
+  name: string
+  description?: string
+}
+
 export default function EditTenantPage() {
   const params = useParams()
   const router = useRouter()
@@ -27,6 +37,7 @@ export default function EditTenantPage() {
 
   const [tenant, setTenant] = useState<Tenant | null>(null)
   const [accounts, setAccounts] = useState<WhatsAppAccount[]>([])
+  const [flows, setFlows] = useState<Flow[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +48,10 @@ export default function EditTenantPage() {
   const [accessToken, setAccessToken] = useState('')
   const [phoneNumberId, setPhoneNumberId] = useState('')
   const [businessAccountId, setBusinessAccountId] = useState('')
+  const [welcomeMessageNew, setWelcomeMessageNew] = useState('')
+  const [welcomeMessageKnown, setWelcomeMessageKnown] = useState('')
+  const [newUserFlowId, setNewUserFlowId] = useState('')
+  const [knownUserFlowId, setKnownUserFlowId] = useState('')
 
   useEffect(() => {
     fetchTenant()
@@ -44,17 +59,31 @@ export default function EditTenantPage() {
 
   const fetchTenant = async () => {
     try {
-      const response = await fetch(`/api/admin/tenants/${tenantId}`)
-      if (!response.ok) throw new Error('Failed to fetch tenant')
+      // Fetch tenant and flows in parallel
+      const [tenantResponse, flowsResponse] = await Promise.all([
+        fetch(`/api/admin/tenants/${tenantId}`),
+        fetch(`/api/admin/flows?tenantId=${tenantId}`)
+      ])
 
-      const data = await response.json()
-      setTenant(data.tenant)
-      setAccounts(data.accounts)
+      if (!tenantResponse.ok) throw new Error('Failed to fetch tenant')
+      if (!flowsResponse.ok) throw new Error('Failed to fetch flows')
+
+      const tenantData = await tenantResponse.json()
+      const flowsData = await flowsResponse.json()
+
+      setTenant(tenantData.tenant)
+      setAccounts(tenantData.accounts)
+      setFlows(flowsData.flows)
 
       // Set form values
-      setName(data.tenant.name)
-      if (data.accounts.length > 0) {
-        const account = data.accounts[0]
+      setName(tenantData.tenant.name)
+      setWelcomeMessageNew(tenantData.tenant.welcome_message_new || '')
+      setWelcomeMessageKnown(tenantData.tenant.welcome_message_known || '')
+      setNewUserFlowId(tenantData.tenant.new_user_flow_id || '')
+      setKnownUserFlowId(tenantData.tenant.known_user_flow_id || '')
+
+      if (tenantData.accounts.length > 0) {
+        const account = tenantData.accounts[0]
         setAccessToken(account.access_token)
         setPhoneNumberId(account.phone_number_id)
         setBusinessAccountId(account.business_account_id)
@@ -82,6 +111,10 @@ export default function EditTenantPage() {
           accessToken,
           phoneNumberId,
           businessAccountId,
+          welcomeMessageNew,
+          welcomeMessageKnown,
+          newUserFlowId: newUserFlowId || null,
+          knownUserFlowId: knownUserFlowId || null,
         }),
       })
 
@@ -296,6 +329,99 @@ export default function EditTenantPage() {
                 <p className="text-sm text-gray-500 mt-1">
                   Use this token when verifying your webhook in Meta Business Suite.
                 </p>
+              </div>
+            </div>
+
+            {/* Flow Configuration */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Flow Configuration</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Configure welcome messages and flows for new and existing users.
+                Use variables like <code className="bg-gray-100 px-1 py-0.5 rounded">{'{nombre}'}</code> and <code className="bg-gray-100 px-1 py-0.5 rounded">{'{phone}'}</code> in your messages.
+              </p>
+
+              {/* New Users */}
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <h3 className="text-lg font-medium mb-3">New Users (First Contact)</h3>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Welcome Message
+                  </label>
+                  <textarea
+                    value={welcomeMessageNew}
+                    onChange={(e) => setWelcomeMessageNew(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    rows={3}
+                    placeholder="¡Hola! Bienvenido. ¿Cuál es tu nombre?"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Available variables: {'{nombre}'}, {'{phone}'}
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Flow to Execute
+                  </label>
+                  <select
+                    value={newUserFlowId}
+                    onChange={(e) => setNewUserFlowId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">-- Select Flow (Optional) --</option>
+                    {flows.map((flow) => (
+                      <option key={flow.id} value={flow.id}>
+                        {flow.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Optional: Select a flow to execute after sending the welcome message
+                  </p>
+                </div>
+              </div>
+
+              {/* Existing Users */}
+              <div className="mb-4 p-4 bg-green-50 rounded-lg">
+                <h3 className="text-lg font-medium mb-3">Existing Users (Return Contact)</h3>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Welcome Message
+                  </label>
+                  <textarea
+                    value={welcomeMessageKnown}
+                    onChange={(e) => setWelcomeMessageKnown(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    rows={3}
+                    placeholder="¡Hola {'{nombre}'}! ¿En qué puedo ayudarte hoy?"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Available variables: {'{nombre}'}, {'{phone}'}
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Flow to Execute
+                  </label>
+                  <select
+                    value={knownUserFlowId}
+                    onChange={(e) => setKnownUserFlowId(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">-- Select Flow (Optional) --</option>
+                    {flows.map((flow) => (
+                      <option key={flow.id} value={flow.id}>
+                        {flow.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Optional: Select a flow to execute after sending the welcome message
+                  </p>
+                </div>
               </div>
             </div>
 
