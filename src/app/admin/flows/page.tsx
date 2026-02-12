@@ -362,11 +362,11 @@ function FlowEditorContent() {
               <>
                 <button
                   onClick={handleSaveFlow}
-                  disabled={saving || !isDirty}
+                  disabled={saving}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2"
                 >
                   <Save size={16} />
-                  {saving ? 'Guardando...' : 'Guardar'}
+                  {saving ? 'Guardando...' : isDirty ? 'Guardar Cambios' : 'Guardar'}
                 </button>
 
                 <button
@@ -399,9 +399,13 @@ function FlowEditorContent() {
           </div>
         )}
 
-        {isDirty && (
-          <div className="mt-2 text-sm text-orange-600">
-            ⚠️ Hay cambios sin guardar
+        {selectedFlowId && (
+          <div className="mt-2 text-sm">
+            {isDirty ? (
+              <span className="text-orange-600">⚠️ Hay cambios sin guardar</span>
+            ) : (
+              <span className="text-green-600">✓ Todo guardado</span>
+            )}
           </div>
         )}
       </div>

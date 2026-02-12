@@ -96,7 +96,7 @@ export async function PATCH(
         nodeIdMapping[node.id] = createdNode.id
       }
 
-      // Update transitions with real database IDs
+      // Update transitions and config with real database IDs
       for (const [oldId, newId] of Object.entries(nodeIdMapping)) {
         const node = nodes.find(n => n.id === oldId)
         if (!node) continue
@@ -104,7 +104,7 @@ export async function PATCH(
         const transitions = transitionsMap[oldId]
         if (!transitions || Object.keys(transitions).length === 0) continue
 
-        // Map old IDs to new IDs
+        // Map old IDs to new IDs in transitions
         const updatedTransitions: Record<string, string> = {}
         for (const [key, targetOldId] of Object.entries(transitions)) {
           const targetNewId = nodeIdMapping[targetOldId as string]
@@ -113,9 +113,13 @@ export async function PATCH(
           }
         }
 
-        // Update node with real transitions
+        // Update config with real IDs for options/buttons
+        const updatedConfig = updateConfigWithRealIds(node, nodeIdMapping)
+
+        // Update node with real transitions and config
         await updateNode(newId, {
           transitions: updatedTransitions,
+          config: updatedConfig,
         })
       }
     }
@@ -191,6 +195,38 @@ function processNodeConfig(
       ...button,
       nextNodeId: transitions[button.id] || transitions['default'] || '',
     }))
+  }
+
+  return config
+}
+
+// Helper: Update config with real database IDs
+function updateConfigWithRealIds(
+  node: any,
+  nodeIdMapping: Record<string, string>
+): Record<string, any> {
+  const config = { ...node.data.config }
+
+  if (node.type === 'menu' && config.options) {
+    config.options = config.options.map((option: any) => {
+      const oldNextNodeId = option.nextNodeId
+      const newNextNodeId = oldNextNodeId ? nodeIdMapping[oldNextNodeId] : undefined
+      return {
+        ...option,
+        nextNodeId: newNextNodeId || oldNextNodeId || '',
+      }
+    })
+  }
+
+  if (node.type === 'buttons' && config.buttons) {
+    config.buttons = config.buttons.map((button: any) => {
+      const oldNextNodeId = button.nextNodeId
+      const newNextNodeId = oldNextNodeId ? nodeIdMapping[oldNextNodeId] : undefined
+      return {
+        ...button,
+        nextNodeId: newNextNodeId || oldNextNodeId || '',
+      }
+    })
   }
 
   return config
