@@ -21,9 +21,17 @@ export class ButtonsHandler extends BaseHandler {
     try {
       const config = context.node.config as ButtonsHandlerConfig
 
+      // Check if we already sent buttons (waiting for response)
+      const waitingForResponse = (context.conversation.context as any)?.[`waiting_buttons_${context.node.id}`]
+
       // Check if this is a response to buttons (user clicked a button)
-      if (context.incomingMessage.type === 'interactive') {
+      if (context.incomingMessage.type === 'interactive' && waitingForResponse) {
         return this.handleButtonResponse(context, config)
+      }
+
+      // Check if user sent text as response (fallback)
+      if (context.incomingMessage.type === 'text' && waitingForResponse) {
+        return this.handleTextResponse(context, config)
       }
 
       // Send buttons
@@ -85,7 +93,51 @@ export class ButtonsHandler extends BaseHandler {
 
     return {
       success: true,
+      updateContext: {
+        [`waiting_buttons_${context.node.id}`]: true,
+      },
       // Stay on this node, waiting for user response
+    }
+  }
+
+  private handleTextResponse(
+    context: HandlerContext,
+    config: ButtonsHandlerConfig
+  ): HandlerResult {
+    const userText = context.incomingMessage.text?.body?.trim()
+
+    if (!userText) {
+      return {
+        success: false,
+        error: 'No text provided',
+      }
+    }
+
+    // Find button by ID or title (case insensitive)
+    const button = config.buttons.find(
+      (btn) => btn.id.toLowerCase() === userText.toLowerCase() ||
+               btn.title.toLowerCase() === userText.toLowerCase()
+    )
+
+    if (!button) {
+      return {
+        success: false,
+        error: 'Invalid button option',
+      }
+    }
+
+    // Get next node
+    const nextNodeId =
+      button.nextNodeId ||
+      this.getTransitionNodeId(context.node, button.id) ||
+      this.getTransitionNodeId(context.node, 'default')
+
+    return {
+      success: true,
+      nextNodeId,
+      updateContext: {
+        [`waiting_buttons_${context.node.id}`]: false,
+      },
     }
   }
 
@@ -137,6 +189,9 @@ export class ButtonsHandler extends BaseHandler {
     return {
       success: true,
       nextNodeId,
+      updateContext: {
+        [`waiting_buttons_${context.node.id}`]: false,
+      },
     }
   }
 }

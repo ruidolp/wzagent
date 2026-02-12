@@ -25,9 +25,17 @@ export class MenuHandler extends BaseHandler {
     try {
       const config = context.node.config as MenuHandlerConfig
 
+      // Check if we already sent menu (waiting for response)
+      const waitingForResponse = (context.conversation.context as any)?.[`waiting_menu_${context.node.id}`]
+
       // Check if this is a response to menu (user selected an option)
-      if (context.incomingMessage.type === 'interactive') {
+      if (context.incomingMessage.type === 'interactive' && waitingForResponse) {
         return this.handleMenuResponse(context, config)
+      }
+
+      // Check if user sent text as response (fallback)
+      if (context.incomingMessage.type === 'text' && waitingForResponse) {
+        return this.handleTextResponse(context, config)
       }
 
       // Send menu
@@ -96,7 +104,51 @@ export class MenuHandler extends BaseHandler {
 
     return {
       success: true,
+      updateContext: {
+        [`waiting_menu_${context.node.id}`]: true,
+      },
       // Stay on this node, waiting for user response
+    }
+  }
+
+  private handleTextResponse(
+    context: HandlerContext,
+    config: MenuHandlerConfig
+  ): HandlerResult {
+    const userText = context.incomingMessage.text?.body?.trim()
+
+    if (!userText) {
+      return {
+        success: false,
+        error: 'No text provided',
+      }
+    }
+
+    // Find option by ID or title (case insensitive)
+    const option = config.options.find(
+      (opt) => opt.id.toLowerCase() === userText.toLowerCase() ||
+               opt.title.toLowerCase() === userText.toLowerCase()
+    )
+
+    if (!option) {
+      return {
+        success: false,
+        error: 'Invalid menu option',
+      }
+    }
+
+    // Get next node
+    const nextNodeId =
+      option.nextNodeId ||
+      this.getTransitionNodeId(context.node, option.id) ||
+      this.getTransitionNodeId(context.node, 'default')
+
+    return {
+      success: true,
+      nextNodeId,
+      updateContext: {
+        [`waiting_menu_${context.node.id}`]: false,
+      },
     }
   }
 
@@ -148,6 +200,9 @@ export class MenuHandler extends BaseHandler {
     return {
       success: true,
       nextNodeId,
+      updateContext: {
+        [`waiting_menu_${context.node.id}`]: false,
+      },
     }
   }
 }
