@@ -13,6 +13,7 @@ interface Tenant {
   welcome_message_known?: string
   new_user_flow_id?: string
   known_user_flow_id?: string
+  session_timeout_minutes?: number
 }
 
 interface WhatsAppAccount {
@@ -52,6 +53,7 @@ export default function EditTenantPage() {
   const [welcomeMessageKnown, setWelcomeMessageKnown] = useState('')
   const [newUserFlowId, setNewUserFlowId] = useState('')
   const [knownUserFlowId, setKnownUserFlowId] = useState('')
+  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(3)
 
   useEffect(() => {
     fetchTenant()
@@ -81,6 +83,7 @@ export default function EditTenantPage() {
       setWelcomeMessageKnown(tenantData.tenant.welcome_message_known || '')
       setNewUserFlowId(tenantData.tenant.new_user_flow_id || '')
       setKnownUserFlowId(tenantData.tenant.known_user_flow_id || '')
+      setSessionTimeoutMinutes(tenantData.tenant.session_timeout_minutes || 3)
 
       if (tenantData.accounts.length > 0) {
         const account = tenantData.accounts[0]
@@ -115,6 +118,7 @@ export default function EditTenantPage() {
           welcomeMessageKnown,
           newUserFlowId: newUserFlowId || null,
           knownUserFlowId: knownUserFlowId || null,
+          sessionTimeoutMinutes,
         }),
       })
 
@@ -339,6 +343,27 @@ export default function EditTenantPage() {
                 Configure welcome messages and flows for new and existing users.
                 Use variables like <code className="bg-gray-100 px-1 py-0.5 rounded">{'{nombre}'}</code> and <code className="bg-gray-100 px-1 py-0.5 rounded">{'{phone}'}</code> in your messages.
               </p>
+
+              {/* Session Timeout */}
+              <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <h3 className="text-lg font-medium mb-3">Session Timeout</h3>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Session Duration (minutes)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    value={sessionTimeoutMinutes}
+                    onChange={(e) => setSessionTimeoutMinutes(parseInt(e.target.value) || 3)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    After this time of inactivity, the next message will restart the conversation with a new welcome message. Default: 3 minutes.
+                  </p>
+                </div>
+              </div>
 
               {/* New Users */}
               <div className="mb-6 p-4 bg-blue-50 rounded-lg">

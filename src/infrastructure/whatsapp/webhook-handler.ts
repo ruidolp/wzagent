@@ -146,15 +146,53 @@ export class WebhookHandler {
         profileName
       )
 
-      // Get or create conversation
-      const conversation = await conversationService.getOrCreateConversation(
+      // Check if this is a new conversation (first contact or returning after session expired)
+      const sessionTimeoutMinutes = tenant.session_timeout_minutes || 3
+      const existingConversation = await conversationService.getOrCreateConversation(
         tenant.id,
         account.id,
-        user
+        user,
+        undefined,
+        sessionTimeoutMinutes
       )
+
+      const isNewConversation = !existingConversation.current_node_id
+
+      // Get or create conversation
+      const conversation = existingConversation
 
       // Save incoming message
       await conversationService.saveIncomingMessage(conversation, message)
+
+      // Send welcome message if this is a new conversation
+      if (isNewConversation) {
+        const { messageSender } = await import('@/infrastructure/messaging/message-sender')
+
+        const isKnownUser = user.name !== null
+        const welcomeMessage = isKnownUser
+          ? tenant.welcome_message_known
+          : tenant.welcome_message_new
+
+        if (welcomeMessage) {
+          // Replace variables in welcome message
+          const processedMessage = welcomeMessage
+            .replace(/\{nombre\}/g, user.name || 'amigo')
+            .replace(/\{phone\}/g, user.phone_number)
+
+          await messageSender.sendText(
+            account.id,
+            user.phone_number,
+            processedMessage,
+            conversation.id
+          )
+
+          logger.info('Sent welcome message', {
+            userId: user.id,
+            isKnownUser,
+            messageLength: processedMessage.length
+          })
+        }
+      }
 
       // Determine which flow to execute
       const { flowExecutionService } = await import('@/application/services/flow-execution.service')

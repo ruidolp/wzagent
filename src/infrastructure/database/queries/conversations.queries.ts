@@ -11,12 +11,18 @@ export async function getConversationById(id: string) {
 }
 
 export async function getActiveConversation(userId: string) {
+  const now = new Date()
+
   return await getDb()
     .selectFrom('conversations')
     .selectAll()
     .where('user_id', '=', userId)
     .where('status', '=', 'active')
     .where('deleted_at', 'is', null)
+    .where((eb) => eb.or([
+      eb('session_expires_at', 'is', null),
+      eb('session_expires_at', '>', now)
+    ]))
     .executeTakeFirst()
 }
 

@@ -49,7 +49,8 @@ export async function PATCH(
       welcomeMessageNew,
       welcomeMessageKnown,
       newUserFlowId,
-      knownUserFlowId
+      knownUserFlowId,
+      sessionTimeoutMinutes
     } = body
 
     // Build tenant update data
@@ -59,6 +60,7 @@ export async function PATCH(
     if (welcomeMessageKnown !== undefined) tenantUpdateData.welcome_message_known = welcomeMessageKnown
     if (newUserFlowId !== undefined) tenantUpdateData.new_user_flow_id = newUserFlowId || null
     if (knownUserFlowId !== undefined) tenantUpdateData.known_user_flow_id = knownUserFlowId || null
+    if (sessionTimeoutMinutes !== undefined) tenantUpdateData.session_timeout_minutes = sessionTimeoutMinutes
 
     // Update tenant if any fields provided
     if (Object.keys(tenantUpdateData).length > 0) {

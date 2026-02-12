@@ -14,7 +14,8 @@ export class ConversationService {
     tenantId: string,
     whatsappAccountId: string,
     user: any,
-    flowId?: string
+    flowId?: string,
+    sessionTimeoutMinutes: number = 3
   ): Promise<any> {
     try {
       // Check for active conversation
@@ -23,7 +24,7 @@ export class ConversationService {
       if (conversation) {
         // Extend session
         const sessionExpiresAt = new Date()
-        sessionExpiresAt.setHours(sessionExpiresAt.getHours() + 24)
+        sessionExpiresAt.setMinutes(sessionExpiresAt.getMinutes() + sessionTimeoutMinutes)
 
         const updated = await updateConversation(conversation.id as any, {
           session_expires_at: sessionExpiresAt as any,
@@ -35,7 +36,7 @@ export class ConversationService {
 
       // Create new conversation
       const sessionExpiresAt = new Date()
-      sessionExpiresAt.setHours(sessionExpiresAt.getHours() + 24)
+      sessionExpiresAt.setMinutes(sessionExpiresAt.getMinutes() + sessionTimeoutMinutes)
 
       logger.info('Creating new conversation', { userId: user.id, tenantId })
       conversation = await createConversation({
