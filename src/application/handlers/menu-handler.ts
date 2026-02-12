@@ -106,7 +106,16 @@ export class MenuHandler extends BaseHandler {
   ): HandlerResult {
     const interactive = context.incomingMessage.interactive
 
+    console.log('🟣 ===============================================')
+    console.log('🟣 MENU RESPONSE RECEIVED')
+    console.log('🟣 ===============================================')
+    console.log('📨 Full message:', JSON.stringify(context.incomingMessage, null, 2))
+    console.log('🎯 Interactive:', JSON.stringify(interactive, null, 2))
+    console.log('⚙️  Config options:', JSON.stringify(config.options, null, 2))
+    console.log('🟣 ===============================================')
+
     if (!interactive?.list_reply) {
+      console.error('❌ No list_reply found in interactive message')
       return {
         success: false,
         error: 'Invalid interactive response',
@@ -114,16 +123,21 @@ export class MenuHandler extends BaseHandler {
     }
 
     const selectedId = interactive.list_reply.id
+    console.log('🆔 Selected option ID:', selectedId)
 
     // Find the option
     const option = config.options.find((opt) => opt.id === selectedId)
 
     if (!option) {
+      console.error('❌ Option not found with ID:', selectedId)
+      console.error('❌ Available option IDs:', config.options.map(o => o.id))
       return {
         success: false,
         error: 'Invalid menu option',
       }
     }
+
+    console.log('✅ Option found:', JSON.stringify(option, null, 2))
 
     // Get next node - priority: option.nextNodeId > transitions > default
     const nextNodeId =

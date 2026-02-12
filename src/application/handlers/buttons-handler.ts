@@ -95,7 +95,16 @@ export class ButtonsHandler extends BaseHandler {
   ): HandlerResult {
     const interactive = context.incomingMessage.interactive
 
+    console.log('🔵 ===============================================')
+    console.log('🔵 BUTTON RESPONSE RECEIVED')
+    console.log('🔵 ===============================================')
+    console.log('📨 Full message:', JSON.stringify(context.incomingMessage, null, 2))
+    console.log('🎯 Interactive:', JSON.stringify(interactive, null, 2))
+    console.log('⚙️  Config buttons:', JSON.stringify(config.buttons, null, 2))
+    console.log('🔵 ===============================================')
+
     if (!interactive?.button_reply) {
+      console.error('❌ No button_reply found in interactive message')
       return {
         success: false,
         error: 'Invalid interactive response',
@@ -103,16 +112,21 @@ export class ButtonsHandler extends BaseHandler {
     }
 
     const selectedId = interactive.button_reply.id
+    console.log('🆔 Selected button ID:', selectedId)
 
     // Find the button
     const button = config.buttons.find((btn) => btn.id === selectedId)
 
     if (!button) {
+      console.error('❌ Button not found with ID:', selectedId)
+      console.error('❌ Available button IDs:', config.buttons.map(b => b.id))
       return {
         success: false,
         error: 'Invalid button option',
       }
     }
+
+    console.log('✅ Button found:', JSON.stringify(button, null, 2))
 
     // Get next node - priority: button.nextNodeId > transitions > default
     const nextNodeId =
