@@ -82,17 +82,16 @@ export async function POST(
       logger.debug('Webhook signature received', { signature: signature.substring(0, 20) })
     }
 
-    // Process webhook asynchronously
-    // We respond immediately to avoid timeout
-    setImmediate(async () => {
-      try {
-        await webhookHandler.processWebhook(tenantId, body, headers)
-      } catch (error) {
-        logger.error('Async webhook processing error', error)
-      }
-    })
+    // Process webhook synchronously
+    // Meta expects a response within 20 seconds, which is enough time
+    try {
+      await webhookHandler.processWebhook(tenantId, body, headers)
+    } catch (error) {
+      logger.error('Webhook processing error', error)
+      // Still return 200 to avoid Meta retries
+    }
 
-    // Respond immediately with 200 OK
+    // Respond with 200 OK after processing
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
     logger.error('Webhook POST error', error)
