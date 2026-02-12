@@ -17,11 +17,15 @@ export class EndHandler extends BaseHandler {
     try {
       const config = context.node.config as EndHandlerConfig
 
+      // Default to 'finish' if action not specified
+      const action = config.action || 'finish'
+
       console.log('🔴 ===============================================')
       console.log('🔴 END NODE EXECUTING')
       console.log('🔴 ===============================================')
       console.log('📋 Config:', JSON.stringify(config, null, 2))
-      console.log('🎬 Action:', config.action)
+      console.log('🎬 Action (original):', config.action)
+      console.log('🎬 Action (resolved):', action)
       console.log('💬 Message:', config.message)
       console.log('🔴 ===============================================')
 
@@ -42,7 +46,7 @@ export class EndHandler extends BaseHandler {
       }
 
       // Handle different end actions
-      switch (config.action) {
+      switch (action) {
         case 'finish':
           console.log('✅ Executing FINISH action')
           // Clear current node to mark conversation as ended
@@ -129,8 +133,8 @@ export class EndHandler extends BaseHandler {
           }
 
         default:
-          console.error('❌ Unknown end action:', config.action)
-          logger.error('Unknown end action', { action: config.action })
+          console.error('❌ Unknown end action:', action)
+          logger.error('Unknown end action', { action })
           return {
             success: false,
             error: 'Unknown end action',
