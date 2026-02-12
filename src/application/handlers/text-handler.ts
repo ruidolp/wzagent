@@ -36,8 +36,11 @@ export class TextHandler extends BaseHandler {
         }
       }
 
-      // Get next node
-      const nextNodeId = config.nextNodeId || this.getTransitionNodeId(context.node, 'next')
+      // Get next node - priority: transitions > config.nextNodeId > 'next' key
+      const nextNodeId =
+        this.getTransitionNodeId(context.node, 'default') ||
+        this.getTransitionNodeId(context.node, 'next') ||
+        config.nextNodeId
 
       return {
         success: true,

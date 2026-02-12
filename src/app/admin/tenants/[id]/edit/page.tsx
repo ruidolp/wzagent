@@ -336,20 +336,27 @@ export default function EditTenantPage() {
               </div>
             </div>
 
-            {/* Flow Configuration */}
+            {/* Conversation Configuration */}
             <div>
-              <h2 className="text-xl font-semibold mb-4">Flow Configuration</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold">Configuración de Conversaciones</h2>
+                <Link
+                  href="/admin/flows"
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm"
+                >
+                  🎨 Editor de Flujos
+                </Link>
+              </div>
               <p className="text-sm text-gray-600 mb-4">
-                Configure welcome messages and flows for new and existing users.
-                Use variables like <code className="bg-gray-100 px-1 py-0.5 rounded">{'{nombre}'}</code> and <code className="bg-gray-100 px-1 py-0.5 rounded">{'{phone}'}</code> in your messages.
+                Configura mensajes de bienvenida y flujos. Las variables disponibles son: <code className="bg-gray-100 px-1 py-0.5 rounded">{'{nombre}'}</code> y <code className="bg-gray-100 px-1 py-0.5 rounded">{'{phone}'}</code>
               </p>
 
               {/* Session Timeout */}
               <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <h3 className="text-lg font-medium mb-3">Session Timeout</h3>
+                <h3 className="text-lg font-medium mb-3">Tiempo de Sesión</h3>
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Session Duration (minutes)
+                    Duración de Sesión (minutos)
                   </label>
                   <input
                     type="number"
@@ -360,18 +367,18 @@ export default function EditTenantPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    After this time of inactivity, the next message will restart the conversation with a new welcome message. Default: 3 minutes.
+                    Después de este tiempo de inactividad, el siguiente mensaje reiniciará la conversación. Por defecto: 3 minutos.
                   </p>
                 </div>
               </div>
 
               {/* New Users */}
               <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">New Users (First Contact)</h3>
+                <h3 className="text-lg font-medium mb-3">Usuarios Nuevos (Primer Contacto)</h3>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Welcome Message
+                    Mensaje de Bienvenida
                   </label>
                   <textarea
                     value={welcomeMessageNew}
@@ -381,20 +388,20 @@ export default function EditTenantPage() {
                     placeholder="¡Hola! Bienvenido. ¿Cuál es tu nombre?"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Available variables: {'{nombre}'}, {'{phone}'}
+                    Variables: {'{nombre}'}, {'{phone}'}
                   </p>
                 </div>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Flow to Execute
+                    Flujo a Ejecutar
                   </label>
                   <select
                     value={newUserFlowId}
                     onChange={(e) => setNewUserFlowId(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   >
-                    <option value="">-- Select Flow (Optional) --</option>
+                    <option value="">-- Sin Flujo --</option>
                     {flows.map((flow) => (
                       <option key={flow.id} value={flow.id}>
                         {flow.name}
@@ -402,41 +409,41 @@ export default function EditTenantPage() {
                     ))}
                   </select>
                   <p className="text-sm text-gray-500 mt-1">
-                    Optional: Select a flow to execute after sending the welcome message
+                    Crea flujos en el <Link href="/admin/flows" className="text-blue-600 hover:underline">Editor de Flujos</Link>
                   </p>
                 </div>
               </div>
 
               {/* Existing Users */}
               <div className="mb-4 p-4 bg-green-50 rounded-lg">
-                <h3 className="text-lg font-medium mb-3">Existing Users (Return Contact)</h3>
+                <h3 className="text-lg font-medium mb-3">Usuarios Conocidos (Retorno)</h3>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Welcome Message
+                    Mensaje de Bienvenida
                   </label>
                   <textarea
                     value={welcomeMessageKnown}
                     onChange={(e) => setWelcomeMessageKnown(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     rows={3}
-                    placeholder="¡Hola {'{nombre}'}! ¿En qué puedo ayudarte hoy?"
+                    placeholder="¡Hola {nombre}! ¿En qué puedo ayudarte hoy?"
                   />
                   <p className="text-sm text-gray-500 mt-1">
-                    Available variables: {'{nombre}'}, {'{phone}'}
+                    Variables: {'{nombre}'}, {'{phone}'}
                   </p>
                 </div>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Flow to Execute
+                    Flujo a Ejecutar
                   </label>
                   <select
                     value={knownUserFlowId}
                     onChange={(e) => setKnownUserFlowId(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   >
-                    <option value="">-- Select Flow (Optional) --</option>
+                    <option value="">-- Sin Flujo --</option>
                     {flows.map((flow) => (
                       <option key={flow.id} value={flow.id}>
                         {flow.name}
@@ -444,7 +451,7 @@ export default function EditTenantPage() {
                     ))}
                   </select>
                   <p className="text-sm text-gray-500 mt-1">
-                    Optional: Select a flow to execute after sending the welcome message
+                    Crea flujos en el <Link href="/admin/flows" className="text-blue-600 hover:underline">Editor de Flujos</Link>
                   </p>
                 </div>
               </div>

@@ -49,6 +49,12 @@ export default function TenantsPage() {
           <h1 className="text-3xl font-bold">Tenants</h1>
           <div className="flex gap-3">
             <Link
+              href="/admin/flows"
+              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
+            >
+              🎨 Editor de Flujos
+            </Link>
+            <Link
               href="/admin/webhook-logs"
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
             >

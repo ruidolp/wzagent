@@ -1,39 +1,35 @@
 import { BaseHandler, HandlerContext, HandlerResult } from './base-handler'
 import { messageSender } from '@/infrastructure/messaging/message-sender'
 import { logger } from '@/infrastructure/utils/logger'
-import type { WhatsAppInteractive, WhatsAppRow } from '@/domain/types'
 
-interface MenuHandlerConfig {
-  header?: string
+interface ButtonsHandlerConfig {
   body: string
   footer?: string
-  buttonText?: string
-  options: MenuOption[]
+  buttons: ButtonOption[]
 }
 
-interface MenuOption {
+interface ButtonOption {
   id: string
   title: string
-  description?: string
-  nextNodeId: string
+  nextNodeId?: string
 }
 
-export class MenuHandler extends BaseHandler {
-  type = 'menu'
+export class ButtonsHandler extends BaseHandler {
+  type = 'buttons'
 
   async execute(context: HandlerContext): Promise<HandlerResult> {
     try {
-      const config = context.node.config as MenuHandlerConfig
+      const config = context.node.config as ButtonsHandlerConfig
 
-      // Check if this is a response to menu (user selected an option)
+      // Check if this is a response to buttons (user clicked a button)
       if (context.incomingMessage.type === 'interactive') {
-        return this.handleMenuResponse(context, config)
+        return this.handleButtonResponse(context, config)
       }
 
-      // Send menu
-      return this.sendMenu(context, config)
+      // Send buttons
+      return this.sendButtons(context, config)
     } catch (error) {
-      logger.error('MenuHandler error', error)
+      logger.error('ButtonsHandler error', error)
       return {
         success: false,
         error: (error as Error).message,
@@ -41,38 +37,31 @@ export class MenuHandler extends BaseHandler {
     }
   }
 
-  private async sendMenu(
+  private async sendButtons(
     context: HandlerContext,
-    config: MenuHandlerConfig
+    config: ButtonsHandlerConfig
   ): Promise<HandlerResult> {
-    const interactive: WhatsAppInteractive = {
-      type: 'list',
+    // WhatsApp buttons format (max 3 buttons)
+    const buttons = config.buttons.slice(0, 3).map((btn) => ({
+      type: 'reply' as const,
+      reply: {
+        id: btn.id,
+        title: btn.title.substring(0, 20), // Max 20 chars
+      },
+    }))
+
+    const interactive = {
+      type: 'button' as const,
       body: {
         text: config.body,
       },
       action: {
-        button: config.buttonText || 'Ver opciones',
-        sections: [
-          {
-            rows: config.options.map((opt) => ({
-              id: opt.id,
-              title: opt.title,
-              description: opt.description,
-            })),
-          },
-        ],
+        buttons,
       },
     }
 
-    if (config.header) {
-      interactive.header = {
-        type: 'text',
-        text: config.header,
-      }
-    }
-
     if (config.footer) {
-      interactive.footer = {
+      (interactive as any).footer = {
         text: config.footer,
       }
     }
@@ -100,34 +89,34 @@ export class MenuHandler extends BaseHandler {
     }
   }
 
-  private handleMenuResponse(
+  private handleButtonResponse(
     context: HandlerContext,
-    config: MenuHandlerConfig
+    config: ButtonsHandlerConfig
   ): HandlerResult {
     const interactive = context.incomingMessage.interactive
 
-    if (!interactive?.list_reply) {
+    if (!interactive?.button_reply) {
       return {
         success: false,
         error: 'Invalid interactive response',
       }
     }
 
-    const selectedId = interactive.list_reply.id
+    const selectedId = interactive.button_reply.id
 
-    // Find the option
-    const option = config.options.find((opt) => opt.id === selectedId)
+    // Find the button
+    const button = config.buttons.find((btn) => btn.id === selectedId)
 
-    if (!option) {
+    if (!button) {
       return {
         success: false,
-        error: 'Invalid menu option',
+        error: 'Invalid button option',
       }
     }
 
-    // Get next node - priority: option.nextNodeId > transitions > default
+    // Get next node - priority: button.nextNodeId > transitions > default
     const nextNodeId =
-      option.nextNodeId ||
+      button.nextNodeId ||
       this.getTransitionNodeId(context.node, selectedId) ||
       this.getTransitionNodeId(context.node, 'default')
 

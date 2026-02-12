@@ -1,6 +1,7 @@
 import { BaseHandler } from './base-handler'
 import { TextHandler } from './text-handler'
 import { MenuHandler } from './menu-handler'
+import { ButtonsHandler } from './buttons-handler'
 import { CaptureDataHandler } from './capture-data-handler'
 import { logger } from '@/infrastructure/utils/logger'
 
@@ -24,9 +25,10 @@ export class HandlerRegistry {
 // Create singleton registry and auto-register handlers
 export const handlerRegistry = new HandlerRegistry()
 
-// Register MVP handlers
+// Register handlers
 handlerRegistry.register(new TextHandler())
 handlerRegistry.register(new MenuHandler())
+handlerRegistry.register(new ButtonsHandler())
 handlerRegistry.register(new CaptureDataHandler())
 
 // Future handlers can be registered here:
