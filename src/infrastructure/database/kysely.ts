@@ -15,8 +15,15 @@ export function getDb(): Kysely<Database> {
 
     console.log('[DB] Connecting to database:', appConfig.database.url.substring(0, 20) + '...')
 
+    // Parse connection string to update SSL mode
+    let connectionString = appConfig.database.url
+    if (connectionString.includes('sslmode=require')) {
+      // Replace 'require' with 'verify-full' for better security
+      connectionString = connectionString.replace('sslmode=require', 'sslmode=verify-full')
+    }
+
     const pool = new Pool({
-      connectionString: appConfig.database.url,
+      connectionString: connectionString,
       max: appConfig.database.maxConnections,
     })
 

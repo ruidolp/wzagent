@@ -79,6 +79,12 @@ export class FlowExecutionService {
         if (rootNodes.length === 0) {
           logger.warn('No root nodes found for flow', { flowId: flow.id })
           await this.sendDefaultMessage(accountId, user.phone_number, conversation.id)
+          // Mark conversation with a dummy node to prevent re-sending welcome message
+          await conversationService.setCurrentNode(
+            conversation.id,
+            'no_nodes',
+            flow.id
+          )
           return
         }
         currentNodeId = rootNodes[0].id
