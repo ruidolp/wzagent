@@ -302,6 +302,63 @@ function renderConfigFields(
         </div>
       )
 
+    case 'end':
+      return (
+        <div className="space-y-4">
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              ℹ️ Este nodo marca el final del flujo conversacional
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Mensaje Final (opcional)
+            </label>
+            <textarea
+              value={config.message || ''}
+              onChange={(e) => updateField('message', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+              rows={3}
+              placeholder="¡Gracias por contactarnos! Escribe MENU para volver al inicio."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Variables: {'{nombre}'}, {'{phone}'}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Acción al Finalizar
+            </label>
+            <select
+              value={config.action || 'finish'}
+              onChange={(e) => updateField('action', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+            >
+              <option value="finish">Terminar (esperar nuevo contacto)</option>
+              <option value="restart">Reiniciar al flujo por defecto</option>
+              <option value="goto_flow">Ir a otro flujo</option>
+            </select>
+          </div>
+
+          {config.action === 'goto_flow' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                ID del Flujo Destino
+              </label>
+              <input
+                type="text"
+                value={config.flowId || ''}
+                onChange={(e) => updateField('flowId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="ID del flujo"
+              />
+            </div>
+          )}
+        </div>
+      )
+
     case 'ai':
       return (
         <div className="space-y-4">

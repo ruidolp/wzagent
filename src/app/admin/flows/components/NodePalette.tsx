@@ -1,4 +1,4 @@
-import { MessageSquare, List, MousePointerClick, Database, GitBranch, Sparkles } from 'lucide-react'
+import { MessageSquare, List, MousePointerClick, Database, GitBranch, Sparkles, CircleStop } from 'lucide-react'
 
 interface NodeType {
   type: string
@@ -37,6 +37,13 @@ const nodeTypes: NodeType[] = [
     icon: Database,
     color: 'bg-orange-500',
     description: 'Solicita y guarda información del usuario',
+  },
+  {
+    type: 'end',
+    label: 'Fin de Flujo',
+    icon: CircleStop,
+    color: 'bg-red-500',
+    description: 'Marca el final del flujo conversacional',
   },
   {
     type: 'condition',

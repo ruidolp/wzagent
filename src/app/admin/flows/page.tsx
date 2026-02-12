@@ -22,6 +22,7 @@ const nodeTypes = {
   menu: CustomNode,
   buttons: CustomNode,
   capture_data: CustomNode,
+  end: CustomNode,
   condition: CustomNode,
   ai: CustomNode,
 }
@@ -141,10 +142,15 @@ function FlowEditorContent() {
       data.nodes.forEach((node: any) => {
         if (node.transitions) {
           Object.entries(node.transitions).forEach(([key, targetId]) => {
+            // For menu and buttons nodes, use the key as sourceHandle
+            // This ensures edges connect from the correct option/button
+            const needsSourceHandle = node.node_type === 'menu' || node.node_type === 'buttons'
+
             flowEdges.push({
-              id: `${node.id}-${targetId}`,
+              id: `${node.id}-${key}-${targetId}`,
               source: node.id,
               target: targetId as string,
+              sourceHandle: needsSourceHandle ? key : undefined,
               label: key !== 'default' ? key : undefined,
             })
           })
@@ -533,6 +539,8 @@ function getDefaultLabel(nodeType: string): string {
       return 'Botones'
     case 'capture_data':
       return 'Capturar Datos'
+    case 'end':
+      return 'Fin de Flujo'
     case 'condition':
       return 'Condición'
     case 'ai':
