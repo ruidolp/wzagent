@@ -65,6 +65,22 @@ export async function PATCH(
       // Identify root node (no incoming connections)
       const rootNodeId = findRootNode(nodes, edges || [])
 
+      // Clear conversations referencing nodes from this flow
+      // This prevents foreign key constraint errors when deleting nodes
+      await getDb()
+        .updateTable('conversations')
+        .set({
+          current_node_id: null,
+        })
+        .where('current_node_id', 'in', (eb) =>
+          eb.selectFrom('flow_nodes')
+            .select('id')
+            .where('flow_id', '=', flowId)
+        )
+        .execute()
+
+      logger.info('Cleared conversations referencing flow nodes', { flowId })
+
       // Delete all existing nodes first
       await getDb()
         .deleteFrom('flow_nodes')
