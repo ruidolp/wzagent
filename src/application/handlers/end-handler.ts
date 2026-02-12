@@ -17,6 +17,14 @@ export class EndHandler extends BaseHandler {
     try {
       const config = context.node.config as EndHandlerConfig
 
+      console.log('🔴 ===============================================')
+      console.log('🔴 END NODE EXECUTING')
+      console.log('🔴 ===============================================')
+      console.log('📋 Config:', JSON.stringify(config, null, 2))
+      console.log('🎬 Action:', config.action)
+      console.log('💬 Message:', config.message)
+      console.log('🔴 ===============================================')
+
       // Send final message if configured
       if (config.message) {
         const message = this.replaceVariables(config.message, {
@@ -36,6 +44,7 @@ export class EndHandler extends BaseHandler {
       // Handle different end actions
       switch (config.action) {
         case 'finish':
+          console.log('✅ Executing FINISH action')
           // Clear current node to mark conversation as ended
           await conversationService.setCurrentNode(
             context.conversation.id,
@@ -48,6 +57,7 @@ export class EndHandler extends BaseHandler {
             flowId: context.conversation.active_flow_id,
           })
 
+          console.log('✅ FINISH action completed successfully')
           return {
             success: true,
             // No nextNodeId - flow ends here
@@ -119,6 +129,7 @@ export class EndHandler extends BaseHandler {
           }
 
         default:
+          console.error('❌ Unknown end action:', config.action)
           logger.error('Unknown end action', { action: config.action })
           return {
             success: false,
@@ -126,6 +137,7 @@ export class EndHandler extends BaseHandler {
           }
       }
     } catch (error) {
+      console.error('❌ EndHandler error:', error)
       logger.error('EndHandler error', error)
       return {
         success: false,
