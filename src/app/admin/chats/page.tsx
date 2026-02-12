@@ -55,6 +55,8 @@ export default function ChatsPage() {
 
   // Ref for auto-scrolling
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const isFetchingConversationsRef = useRef(false)
+  const isFetchingMessagesRef = useRef(false)
 
   // Fetch tenants on mount
   useEffect(() => {
@@ -67,6 +69,28 @@ export default function ChatsPage() {
       fetchConversations()
     }
   }, [selectedTenantId])
+
+  // Auto-refresh conversations every 1 second
+  useEffect(() => {
+    if (!selectedTenantId) return
+
+    const interval = setInterval(() => {
+      fetchConversations({ silent: true })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [selectedTenantId])
+
+  // Auto-refresh selected conversation messages every 1 second
+  useEffect(() => {
+    if (!selectedConversationId) return
+
+    const interval = setInterval(() => {
+      fetchMessages(selectedConversationId, { silent: true })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [selectedConversationId])
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -91,12 +115,18 @@ export default function ChatsPage() {
     }
   }
 
-  const fetchConversations = async () => {
+  const fetchConversations = async (options?: { silent?: boolean }) => {
     if (!selectedTenantId) return
+    if (isFetchingConversationsRef.current) return
 
     try {
-      setError(null)
-      setLoadingConversations(true)
+      isFetchingConversationsRef.current = true
+      if (!options?.silent) {
+        setError(null)
+      }
+      if (!options?.silent) {
+        setLoadingConversations(true)
+      }
       const response = await fetch(
         `/api/admin/chats/conversations?tenantId=${selectedTenantId}`
       )
@@ -104,16 +134,31 @@ export default function ChatsPage() {
       const data = await response.json()
       setConversations(data.conversations)
     } catch (err) {
-      setError((err as Error).message)
+      if (!options?.silent) {
+        setError((err as Error).message)
+      }
     } finally {
-      setLoadingConversations(false)
+      if (!options?.silent) {
+        setLoadingConversations(false)
+      }
+      isFetchingConversationsRef.current = false
     }
   }
 
-  const fetchMessages = async (conversationId: string) => {
+  const fetchMessages = async (
+    conversationId: string,
+    options?: { silent?: boolean }
+  ) => {
+    if (isFetchingMessagesRef.current) return
+
     try {
-      setError(null)
-      setLoadingMessages(true)
+      isFetchingMessagesRef.current = true
+      if (!options?.silent) {
+        setError(null)
+      }
+      if (!options?.silent) {
+        setLoadingMessages(true)
+      }
       const response = await fetch(
         `/api/admin/chats/messages/${conversationId}`
       )
@@ -122,9 +167,14 @@ export default function ChatsPage() {
       setMessages(data.messages)
       setConversationDetails(data.conversation)
     } catch (err) {
-      setError((err as Error).message)
+      if (!options?.silent) {
+        setError((err as Error).message)
+      }
     } finally {
-      setLoadingMessages(false)
+      if (!options?.silent) {
+        setLoadingMessages(false)
+      }
+      isFetchingMessagesRef.current = false
     }
   }
 
@@ -239,7 +289,7 @@ export default function ChatsPage() {
             {/* Refresh Button */}
             {selectedTenantId && (
               <button
-                onClick={fetchConversations}
+                onClick={() => fetchConversations()}
                 disabled={loadingConversations}
                 className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded disabled:opacity-50"
               >

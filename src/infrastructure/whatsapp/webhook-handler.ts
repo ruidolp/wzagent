@@ -148,7 +148,7 @@ export class WebhookHandler {
 
       // Check if this is a new conversation (first contact or returning after session expired)
       const sessionTimeoutMinutes = tenant.session_timeout_minutes || 3
-      const existingConversation = await conversationService.getOrCreateConversation(
+      const { conversation, wasCreated } = await conversationService.getOrCreateConversation(
         tenant.id,
         account.id,
         user,
@@ -156,18 +156,16 @@ export class WebhookHandler {
         sessionTimeoutMinutes
       )
 
-      const isNewConversation = !existingConversation.current_node_id
+      const isNewConversation = wasCreated
 
       logger.info('Conversation status', {
-        conversationId: existingConversation.id,
-        currentNodeId: existingConversation.current_node_id,
-        activeFlowId: existingConversation.active_flow_id,
+        conversationId: conversation.id,
+        currentNodeId: conversation.current_node_id,
+        activeFlowId: conversation.active_flow_id,
         isNewConversation,
-        sessionExpiresAt: existingConversation.session_expires_at
+        wasCreated,
+        sessionExpiresAt: conversation.session_expires_at
       })
-
-      // Get or create conversation
-      const conversation = existingConversation
 
       // Save incoming message
       await conversationService.saveIncomingMessage(conversation, message)

@@ -17,7 +17,7 @@ export class ConversationService {
     user: any,
     flowId?: string,
     sessionTimeoutMinutes: number = 3
-  ): Promise<any> {
+  ): Promise<{ conversation: any; wasCreated: boolean }> {
     try {
       // Check for active conversation
       let conversation = await getActiveConversation(user.id as any)
@@ -32,7 +32,7 @@ export class ConversationService {
         })
 
         logger.debug('Found active conversation', { conversationId: conversation.id })
-        return updated || conversation
+        return { conversation: updated || conversation, wasCreated: false }
       }
 
       // Close any expired conversations before creating a new one
@@ -52,7 +52,7 @@ export class ConversationService {
         context: {},
       })
 
-      return conversation
+      return { conversation, wasCreated: true }
     } catch (error) {
       logger.error('Error in getOrCreateConversation', error)
       throw error
