@@ -3,6 +3,7 @@ import {
   createConversation,
   updateConversation,
   updateConversationContext,
+  endExpiredConversations,
 } from '@/infrastructure/database/queries/conversations.queries'
 import { createMessage } from '@/infrastructure/database/queries/messages.queries'
 import { logger } from '@/infrastructure/utils/logger'
@@ -33,6 +34,9 @@ export class ConversationService {
         logger.debug('Found active conversation', { conversationId: conversation.id })
         return updated || conversation
       }
+
+      // Close any expired conversations before creating a new one
+      await endExpiredConversations(user.id as any)
 
       // Create new conversation
       const sessionExpiresAt = new Date()

@@ -77,3 +77,16 @@ export async function endConversation(id: string) {
     .where('id', '=', id)
     .execute()
 }
+
+export async function endExpiredConversations(userId: string) {
+  const now = new Date()
+
+  return await getDb()
+    .updateTable('conversations')
+    .set({ status: 'completed' })
+    .where('user_id', '=', userId)
+    .where('status', '=', 'active')
+    .where('deleted_at', 'is', null)
+    .where('session_expires_at', '<=', now)
+    .execute()
+}
